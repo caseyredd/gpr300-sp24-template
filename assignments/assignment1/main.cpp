@@ -37,8 +37,6 @@ struct Material {
 	float Shininess = 128;
 }material;
 
-//bob::Framebuffer framebuffer = bob::createFramebuffer(screenWidth, screenHeight, GL_RGB16F);
-
 int main() {
 	GLFWwindow* window = initWindow("Assignment 1", screenWidth, screenHeight);
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
@@ -53,6 +51,8 @@ int main() {
 	ew::Shader shader = ew::Shader("assets/lit.vert", "assets/lit.frag");
 	ew::Model monkeyModel = ew::Model("assets/suzanne.obj");
 	ew::Transform monkeyTransform;
+	
+	bob::Framebuffer framebuffer = bob::createFramebuffer(screenWidth, screenHeight, GL_RGB16F);
 
 	camera.position = glm::vec3(0.0f, 0.0f, 5.0f);
 	camera.target = glm::vec3(0.0f, 0.0f, 0.0f); //Look at the center of the scene
