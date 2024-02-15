@@ -68,6 +68,7 @@ int main() {
 		prevFrameTime = time;
 
 		//RENDER
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.fbo);
 		glClearColor(0.6f,0.8f,0.92f,1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -102,6 +103,7 @@ int main() {
 		shader.setFloat("_Material.Ks", material.Ks);
 		shader.setFloat("_Material.Shininess", material.Shininess);
 
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		drawUI();
 
