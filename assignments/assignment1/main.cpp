@@ -18,8 +18,10 @@
 
 
 
+
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 GLFWwindow* initWindow(const char* title, int width, int height);
+GLuint brickTexture = ew::loadTexture("assets/Metal007.png");
 void drawUI();
 ew::Camera camera;
 ew::CameraController cameraController;
@@ -46,13 +48,15 @@ int main() {
 	glEnable(GL_DEPTH_TEST); //Depth testing
 	
 	//Handles to OpenGL object are unsigned integers
-	GLuint brickTexture = ew::loadTexture("assets/Metal007.png");
+	cameraController.move(window, &camera, deltaTime);
 
-	ew::Shader shader = ew::Shader("assets/lit.vert", "assets/lit.frag");
-	ew::Model monkeyModel = ew::Model("assets/suzanne.obj");
-	ew::Transform monkeyTransform;
+	ew::Shader postProcessShader = ew::Shader("assets/triangle.vert", "assets/post.frag");
+
 	
 	bob::Framebuffer framebuffer = bob::createFramebuffer(screenWidth, screenHeight, GL_RGB16F);
+	
+	unsigned int dummyVAO;
+	glCreateVertexArrays(1, &dummyVAO);
 
 	camera.position = glm::vec3(0.0f, 0.0f, 5.0f);
 	camera.target = glm::vec3(0.0f, 0.0f, 0.0f); //Look at the center of the scene
@@ -72,38 +76,14 @@ int main() {
 		glClearColor(0.6f,0.8f,0.92f,1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		shader.use();
 
-		//Keeping this in caused the model not to rotate so I commented this out. 
-		//Not sure why it wasn't just overwriting the command with the second setMat command.
-		//Maybe it just kept getting reset but I having a hard time believing that.
-		//Either way, rotates now so...
-		//shader.setMat4("_Model", glm::mat4(1.0f));
-		
-		shader.setMat4("_ViewProjection", camera.projectionMatrix() * camera.viewMatrix());
-		monkeyModel.draw(); //Draws monkey model using current shader
-		
-		//Rotate model around Y axis
-		monkeyTransform.rotation = glm::rotate(monkeyTransform.rotation, deltaTime, glm::vec3(0.0, 1.0, 0.0));
-
-		//transform.modelMatrix() combines translation, rotation, and scale into a 4x4 model matrix
-		shader.setMat4("_Model", monkeyTransform.modelMatrix());
-
-		cameraController.move(window, &camera, deltaTime);
-
-		//Bind brick texture to texture unit 0 
-		//NEW (4.5)
-		glBindTextureUnit(0, brickTexture);
-		//Make "_MainTex" sampler2D sample from the 2D texture bound to unit 0
-		shader.use();
-		shader.setInt("_MainTex", 0);
-		shader.setVec3("_EyePos", camera.position);
-		shader.setFloat("_Material.Ka", material.Ka);
-		shader.setFloat("_Material.Kd", material.Kd);
-		shader.setFloat("_Material.Ks", material.Ks);
-		shader.setFloat("_Material.Shininess", material.Shininess);
-
+		drawScene();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		postProcessShader.use();
+		glBindTextureUnit(0, *framebuffer.colorBuffer);
+		glBindVertexArray(dummyVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		drawUI();
 
@@ -182,6 +162,41 @@ GLFWwindow* initWindow(const char* title, int width, int height) {
 	return window;
 }
 
+void drawScene()
+{
+	ew::Shader shader = ew::Shader("assets/lit.vert", "assets/lit.frag");
+	ew::Model monkeyModel = ew::Model("assets/suzanne.obj");
+	ew::Transform monkeyTransform;
+	shader.use();
 
+	//Keeping this in caused the model not to rotate so I commented this out. 
+	//Not sure why it wasn't just overwriting the command with the second setMat command.
+	//Maybe it just kept getting reset but I having a hard time believing that.
+	//Either way, rotates now so...
+	//shader.setMat4("_Model", glm::mat4(1.0f));
+
+	shader.setMat4("_ViewProjection", camera.projectionMatrix() * camera.viewMatrix());
+	monkeyModel.draw(); //Draws monkey model using current shader
+
+	//Rotate model around Y axis
+	monkeyTransform.rotation = glm::rotate(monkeyTransform.rotation, deltaTime, glm::vec3(0.0, 1.0, 0.0));
+
+	//transform.modelMatrix() combines translation, rotation, and scale into a 4x4 model matrix
+	shader.setMat4("_Model", monkeyTransform.modelMatrix());
+
+	
+
+	//Bind brick texture to texture unit 0 
+	//NEW (4.5)
+	glBindTextureUnit(0, brickTexture);
+	//Make "_MainTex" sampler2D sample from the 2D texture bound to unit 0
+	shader.use();
+	shader.setInt("_MainTex", 0);
+	shader.setVec3("_EyePos", camera.position);
+	shader.setFloat("_Material.Ka", material.Ka);
+	shader.setFloat("_Material.Kd", material.Kd);
+	shader.setFloat("_Material.Ks", material.Ks);
+	shader.setFloat("_Material.Shininess", material.Shininess);
+}
 
 
