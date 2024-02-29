@@ -39,6 +39,43 @@ struct Material {
 	float Shininess = 128;
 }material;
 
+void drawScene()
+{
+	ew::Shader shader = ew::Shader("assets/lit.vert", "assets/lit.frag");
+	ew::Model monkeyModel = ew::Model("assets/suzanne.obj");
+	ew::Transform monkeyTransform;
+	shader.use();
+
+	//Keeping this in caused the model not to rotate so I commented this out. 
+	//Not sure why it wasn't just overwriting the command with the second setMat command.
+	//Maybe it just kept getting reset but I having a hard time believing that.
+	//Either way, rotates now so...
+	//shader.setMat4("_Model", glm::mat4(1.0f));
+
+	shader.setMat4("_ViewProjection", camera.projectionMatrix() * camera.viewMatrix());
+	monkeyModel.draw(); //Draws monkey model using current shader
+
+	//Rotate model around Y axis
+	monkeyTransform.rotation = glm::rotate(monkeyTransform.rotation, deltaTime, glm::vec3(0.0, 1.0, 0.0));
+
+	//transform.modelMatrix() combines translation, rotation, and scale into a 4x4 model matrix
+	shader.setMat4("_Model", monkeyTransform.modelMatrix());
+
+	
+
+	//Bind brick texture to texture unit 0 
+	//NEW (4.5)
+	glBindTextureUnit(0, brickTexture);
+	//Make "_MainTex" sampler2D sample from the 2D texture bound to unit 0
+	shader.use();
+	shader.setInt("_MainTex", 0);
+	shader.setVec3("_EyePos", camera.position);
+	shader.setFloat("_Material.Ka", material.Ka);
+	shader.setFloat("_Material.Kd", material.Kd);
+	shader.setFloat("_Material.Ks", material.Ks);
+	shader.setFloat("_Material.Shininess", material.Shininess);
+}
+
 int main() {
 	GLFWwindow* window = initWindow("Assignment 1", screenWidth, screenHeight);
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
@@ -160,43 +197,6 @@ GLFWwindow* initWindow(const char* title, int width, int height) {
 	ImGui_ImplOpenGL3_Init();
 
 	return window;
-}
-
-void drawScene()
-{
-	ew::Shader shader = ew::Shader("assets/lit.vert", "assets/lit.frag");
-	ew::Model monkeyModel = ew::Model("assets/suzanne.obj");
-	ew::Transform monkeyTransform;
-	shader.use();
-
-	//Keeping this in caused the model not to rotate so I commented this out. 
-	//Not sure why it wasn't just overwriting the command with the second setMat command.
-	//Maybe it just kept getting reset but I having a hard time believing that.
-	//Either way, rotates now so...
-	//shader.setMat4("_Model", glm::mat4(1.0f));
-
-	shader.setMat4("_ViewProjection", camera.projectionMatrix() * camera.viewMatrix());
-	monkeyModel.draw(); //Draws monkey model using current shader
-
-	//Rotate model around Y axis
-	monkeyTransform.rotation = glm::rotate(monkeyTransform.rotation, deltaTime, glm::vec3(0.0, 1.0, 0.0));
-
-	//transform.modelMatrix() combines translation, rotation, and scale into a 4x4 model matrix
-	shader.setMat4("_Model", monkeyTransform.modelMatrix());
-
-	
-
-	//Bind brick texture to texture unit 0 
-	//NEW (4.5)
-	glBindTextureUnit(0, brickTexture);
-	//Make "_MainTex" sampler2D sample from the 2D texture bound to unit 0
-	shader.use();
-	shader.setInt("_MainTex", 0);
-	shader.setVec3("_EyePos", camera.position);
-	shader.setFloat("_Material.Ka", material.Ka);
-	shader.setFloat("_Material.Kd", material.Kd);
-	shader.setFloat("_Material.Ks", material.Ks);
-	shader.setFloat("_Material.Shininess", material.Shininess);
 }
 
 
