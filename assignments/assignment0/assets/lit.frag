@@ -1,5 +1,6 @@
 #version 450
-out vec4 FragColor; //The color of this fragment
+layout(location = 0) out vec4 FragColor; //The color of this fragment
+layout(location = 1) out vec4 FragColor2;
 in Surface{
 	vec3 WorldPos; //Vertex position in world space
 	vec3 WorldNormal; //Vertex normal in world space
@@ -36,4 +37,6 @@ void main(){
 	lightColor+=_AmbientColor * _Material.Ka;
 	vec3 objectColor = texture(_MainTex,fs_in.TexCoord).rgb;
 	FragColor = vec4(objectColor * lightColor,1.0);
+
+	FragColor2 = vec4(0.0,1.0,0.0,1.0)
 }

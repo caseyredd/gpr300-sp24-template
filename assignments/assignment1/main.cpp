@@ -21,7 +21,6 @@
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 GLFWwindow* initWindow(const char* title, int width, int height);
-GLuint brickTexture = ew::loadTexture("assets/Metal007.png");
 void drawUI();
 ew::Camera camera;
 ew::CameraController cameraController;
@@ -60,8 +59,8 @@ void drawScene()
 
 	//transform.modelMatrix() combines translation, rotation, and scale into a 4x4 model matrix
 	shader.setMat4("_Model", monkeyTransform.modelMatrix());
-
 	
+	GLuint brickTexture = ew::loadTexture("assets/Metal007.png");
 
 	//Bind brick texture to texture unit 0 
 	//NEW (4.5)
@@ -110,18 +109,21 @@ int main() {
 
 		//RENDER
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.fbo);
-		glClearColor(0.6f,0.8f,0.92f,1.0f);
+		glViewport(0, 0, framebuffer.width, framebuffer.height);
+		glClearColor(0.6f, 0.8f, 0.92f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
 		drawScene();
+
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+		//Post Process
 		postProcessShader.use();
 		glBindTextureUnit(0, *framebuffer.colorBuffer);
 		glBindVertexArray(dummyVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
-
 		drawUI();
 
 		glfwSwapBuffers(window);

@@ -5,7 +5,6 @@
 #include "texture.h"
 #include "external/glad.h"
 #include "external/stb_image.h"
-#include <iostream>
 
 static int getTextureFormat(int numComponents) {
 	switch (numComponents) {
